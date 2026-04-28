@@ -1,0 +1,33 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Clonar repo
+      uses: actions/checkout@v3
+
+    - name: Instalar Node
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+
+    - name: Instalar dependencias
+      run: npm install
+
+    - name: Ejecutar pruebas
+      run: npm test
+
+    - name: Login DockerHub
+      run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USER }}" --password-stdin
+
+    - name: Build imagen
+      run: docker build -t ${{ secrets.DOCKER_USER }}/app-cicd .
+
+    - name: Push imagen
+      run: docker push ${{ secrets.DOCKER_USER }}/app-cicd
